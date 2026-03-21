@@ -1,11 +1,19 @@
 import Stripe from 'stripe'
 import type { ShippingInfo } from './apliiq'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-03-04.preview' as Stripe.LatestApiVersion,
-})
+let _stripe: Stripe | null = null
 
-export { stripe }
+function getStripe(): Stripe {
+  if (!_stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not configured')
+    }
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2026-03-04.preview' as Stripe.LatestApiVersion,
+    })
+  }
+  return _stripe
+}
 
 /** $35.00 in cents */
 const CHECKOUT_AMOUNT_CENTS = 3500
@@ -19,7 +27,7 @@ export interface CheckoutPaymentInput {
 export async function createCheckoutPaymentIntent(input: CheckoutPaymentInput) {
   const { shipping, size, designUrl } = input
 
-  const paymentIntent = await stripe.paymentIntents.create({
+  const paymentIntent = await getStripe().paymentIntents.create({
     amount: CHECKOUT_AMOUNT_CENTS,
     currency: 'usd',
     payment_method_types: ['card'],
@@ -42,7 +50,7 @@ export async function createCheckoutPaymentIntent(input: CheckoutPaymentInput) {
 }
 
 export async function verifyPaymentIntent(paymentIntentId: string) {
-  const pi = await stripe.paymentIntents.retrieve(paymentIntentId)
+  const pi = await getStripe().paymentIntents.retrieve(paymentIntentId)
   return {
     verified: pi.status === 'succeeded',
     metadata: pi.metadata,
@@ -53,7 +61,7 @@ export function constructWebhookEvent(
   body: string,
   signature: string,
 ): Stripe.Event {
-  return stripe.webhooks.constructEvent(
+  return getStripe().webhooks.constructEvent(
     body,
     signature,
     process.env.STRIPE_WEBHOOK_SECRET!,
