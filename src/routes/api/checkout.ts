@@ -29,7 +29,7 @@ export const Route = createFileRoute('/api/checkout')({
     handlers: {
       POST: async ({ request }) => {
         // Parse body first to validate before payment
-        let body: { shipping?: ShippingInfo; size?: string }
+        let body: { shipping?: ShippingInfo; size?: string; designUrl?: string }
         try {
           body = await request.json()
         } catch {
@@ -141,7 +141,7 @@ export const Route = createFileRoute('/api/checkout')({
         // Payment verified — create Apliiq order
         let orderResult: { orderId: string; status: string }
         try {
-          orderResult = await createOrder(shipping, size)
+          orderResult = await createOrder(shipping, size, body.designUrl)
         } catch (err) {
           console.error('Apliiq order creation failed:', err)
           return Response.json(

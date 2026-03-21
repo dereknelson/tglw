@@ -59,6 +59,7 @@ export interface CreateOrderResult {
 export async function createOrder(
   shipping: ShippingInfo,
   size: string,
+  designUrl?: string,
 ): Promise<CreateOrderResult> {
   const orderData = {
     shipping_address: {
@@ -74,8 +75,8 @@ export async function createOrder(
       {
         quantity: 1,
         size,
-        // TODO: Set these after Apliiq product setup
         product_id: process.env.APLIIQ_PRODUCT_ID || 'PLACEHOLDER',
+        ...(designUrl ? { artwork_url: designUrl } : {}),
       },
     ],
   }

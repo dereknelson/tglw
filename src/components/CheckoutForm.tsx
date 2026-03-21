@@ -6,9 +6,10 @@ const VALID_SIZES = ['S', 'M', 'L', 'XL', '2XL'] as const
 
 interface CheckoutFormProps {
   onClose: () => void
+  designUrl?: string
 }
 
-export default function CheckoutForm({ onClose }: CheckoutFormProps) {
+export default function CheckoutForm({ onClose, designUrl }: CheckoutFormProps) {
   const { isConnected } = useAccount()
   const { data: walletClient } = useWalletClient()
   const [size, setSize] = useState<string>('L')
@@ -59,7 +60,7 @@ export default function CheckoutForm({ onClose }: CheckoutFormProps) {
       const res = await fetchWithPayment('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shipping, size }),
+        body: JSON.stringify({ shipping, size, designUrl }),
       })
 
       if (!res.ok) {
