@@ -1,17 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 
 const XAI_API_KEY = process.env.XAI_API_KEY || ''
 const GROK_API_URL = 'https://api.x.ai/v1/images/edits'
 
-// Load the base design as base64 at startup
+// Cache the base design as base64
 let baseDesignBase64: string | null = null
 
-function getBaseDesign(): string {
+async function getBaseDesign(requestUrl: string): Promise<string> {
   if (!baseDesignBase64) {
-    const designPath = resolve('public/design.png')
-    const buffer = readFileSync(designPath)
+    const origin = new URL(requestUrl).origin
+    const res = await fetch(`${origin}/design.png`)
+    const buffer = Buffer.from(await res.arrayBuffer())
     baseDesignBase64 = buffer.toString('base64')
   }
   return baseDesignBase64
@@ -66,7 +65,7 @@ export const Route = createFileRoute('/api/customize')({
         const photoMime = photo.type || 'image/jpeg'
 
         // Get base design as base64
-        const designBase64 = getBaseDesign()
+        const designBase64 = await getBaseDesign(request.url)
 
         // Call Grok image edit API
         const grokRes = await fetch(GROK_API_URL, {
@@ -78,7 +77,7 @@ export const Route = createFileRoute('/api/customize')({
           body: JSON.stringify({
             model: 'grok-imagine-image',
             prompt:
-              'Replace the face of the muscular cartoon man in <IMAGE_1> with the face from the photo in <IMAGE_0>. Keep the exact same cartoon/illustration art style, body, pose, clothing, text, and all other elements identical. Only change the face to match the person in <IMAGE_0>, rendered in the same cartoon style.',
+              'Replace the face of the robot character in <IMAGE_1> with the face from the photo in <IMAGE_0>. Keep the exact same cartoon/illustration art style, body, pose, text, and all other elements identical. Only change the face to match the person in <IMAGE_0>, rendered in the same cartoon style.',
             images: [
               { url: `data:${photoMime};base64,${photoBase64}` },
               { url: `data:image/png;base64,${designBase64}` },
