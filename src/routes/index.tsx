@@ -50,9 +50,7 @@ function Store() {
           Buy Now
         </button>
 
-        <p className="mt-4 text-xs text-[var(--ink-muted)]">
-          Powered by x402
-        </p>
+        <p className="mt-4 text-xs text-[var(--ink-muted)]">Powered by x402</p>
       </div>
     </main>
   )
