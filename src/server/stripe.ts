@@ -3,7 +3,7 @@ import type { ShippingInfo } from './apliiq'
 
 let _stripe: Stripe | null = null
 
-function getStripe(): Stripe {
+export function getStripe(): Stripe {
   if (!_stripe) {
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error('STRIPE_SECRET_KEY is not configured')

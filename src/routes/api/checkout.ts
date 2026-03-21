@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createOrder } from '../../server/apliiq'
 import {
-  stripe,
+  getStripe,
   verifyPaymentIntent,
   createCheckoutPaymentIntent,
 } from '../../server/stripe'
@@ -176,7 +176,7 @@ export const Route = createFileRoute('/api/checkout')({
         // === MPP / SPT agent card payment path ===
         if (sptTokenHeader) {
           try {
-            const pi = await stripe.paymentIntents.create({
+            const pi = await getStripe().paymentIntents.create({
               amount: 3500,
               currency: 'usd',
               shared_payment_granted_token: sptTokenHeader,
