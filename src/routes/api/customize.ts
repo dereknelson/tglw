@@ -90,9 +90,20 @@ export const Route = createFileRoute('/api/customize')({
         if (!grokRes.ok) {
           const errText = await grokRes.text()
           console.error('Grok API error:', grokRes.status, errText)
+
+          const isCredits =
+            grokRes.status === 429 ||
+            errText.includes('credit') ||
+            errText.includes('quota') ||
+            errText.includes('rate')
+
           return Response.json(
-            { error: 'Image generation failed. Please try again.' },
-            { status: 502 },
+            {
+              error: isCredits
+                ? 'The cyborg ran out of juice. Our AI credits are cooked — try again later while we feed the machine more coins.'
+                : 'Image generation failed. Please try again.',
+            },
+            { status: isCredits ? 429 : 502 },
           )
         }
 
