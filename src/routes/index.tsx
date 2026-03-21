@@ -7,6 +7,7 @@ export const Route = createFileRoute('/')({ component: Store })
 function Store() {
   const [showCheckout, setShowCheckout] = useState(false)
   const [designUrl, setDesignUrl] = useState('/design.png')
+  const [options, setOptions] = useState<string[]>([])
   const [isCustomizing, setIsCustomizing] = useState(false)
   const [customizeError, setCustomizeError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -33,7 +34,9 @@ function Store() {
       }
 
       const data = await res.json()
-      setDesignUrl(data.imageUrl)
+      const urls = data.imageUrls as string[]
+      setOptions(urls)
+      setDesignUrl(urls[0])
     } catch (err) {
       setCustomizeError(
         err instanceof Error ? err.message : 'Customization failed',
@@ -108,6 +111,29 @@ function Store() {
             <p className="mt-2 text-center text-sm text-red-500">
               {customizeError}
             </p>
+          )}
+
+          {options.length > 1 && (
+            <div className="mt-3 flex items-center justify-center gap-2">
+              {options.map((url, i) => (
+                <button
+                  key={url}
+                  type="button"
+                  onClick={() => setDesignUrl(url)}
+                  className={`h-16 w-16 overflow-hidden rounded-lg border-2 transition ${
+                    designUrl === url
+                      ? 'border-[var(--accent)] shadow-md'
+                      : 'border-transparent opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <img
+                    src={url}
+                    alt={`Option ${i + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
           )}
 
           <p className="mt-3 text-xs leading-relaxed text-[var(--ink-muted)]">

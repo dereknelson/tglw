@@ -75,14 +75,15 @@ export const Route = createFileRoute('/api/customize')({
             Authorization: `Bearer ${XAI_API_KEY}`,
           },
           body: JSON.stringify({
-            model: 'grok-imagine-image',
+            model: 'grok-imagine-image-pro',
             prompt:
               'I need you to edit <IMAGE_1> with MINIMAL changes. This is a t-shirt design of a muscular robot character lifting a barbell with grass on the weights, with text "TEXT CLAUDE." at top, "TOUCH GRASS." in the middle, and "LIFT WEIGHTS." at the bottom. DO NOT regenerate or redraw the image. Make ONE small edit: replace ONLY the robot\'s face/head with the face of the person in <IMAGE_0>, drawn in the same cartoon/comic illustration style. Keep the same exact dimensions and aspect ratio as <IMAGE_1>. Everything else must remain PIXEL-PERFECT identical: the full body, both legs (both feet visible touching the ground), both arms, the barbell, the grass weights, the dirt ground, the lightning bolts, all three lines of text, and the transparent background. Output as PNG with transparent background. Do not crop, resize, recompose, or zoom into the image.',
             images: [
               { url: `data:${photoMime};base64,${photoBase64}` },
               { url: `data:image/png;base64,${designBase64}` },
             ],
-            n: 1,
+            n: 2,
+            resolution: '2k',
             response_format: 'url',
           }),
         })
@@ -100,15 +101,17 @@ export const Route = createFileRoute('/api/customize')({
           data: Array<{ url?: string; b64_json?: string }>
         }
 
-        const imageUrl = grokData.data[0]?.url
-        if (!imageUrl) {
+        const imageUrls = grokData.data
+          .map((d) => d.url)
+          .filter((u): u is string => !!u)
+        if (imageUrls.length === 0) {
           return Response.json(
             { error: 'No image returned from generator' },
             { status: 502 },
           )
         }
 
-        return Response.json({ imageUrl })
+        return Response.json({ imageUrls })
       },
     },
   },
