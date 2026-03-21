@@ -1,36 +1,114 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import CheckoutForm from '../components/CheckoutForm'
 
 export const Route = createFileRoute('/')({ component: Store })
 
 function Store() {
   const [showCheckout, setShowCheckout] = useState(false)
+  const [designUrl, setDesignUrl] = useState('/design.png')
+  const [isCustomizing, setIsCustomizing] = useState(false)
+  const [customizeError, setCustomizeError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsCustomizing(true)
+    setCustomizeError('')
+
+    try {
+      const formData = new FormData()
+      formData.append('photo', file)
+
+      const res = await fetch('/api/customize', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Customization failed')
+      }
+
+      const data = await res.json()
+      setDesignUrl(data.imageUrl)
+    } catch (err) {
+      setCustomizeError(
+        err instanceof Error ? err.message : 'Customization failed',
+      )
+    } finally {
+      setIsCustomizing(false)
+    }
+  }
 
   return (
     <main className="flex min-h-svh flex-col items-center justify-center px-6 pt-20 pb-12">
       <div className="rise-in flex w-full max-w-md flex-col items-center text-center">
-        {/* Shirt mockup placeholder */}
-        <div className="relative mb-10 aspect-square w-full max-w-sm">
-          <div className="flex h-full w-full items-center justify-center rounded-2xl bg-[var(--surface)] shadow-[0_2px_40px_rgba(0,0,0,0.06)]">
-            <div className="flex flex-col items-center gap-3 text-[var(--ink-muted)]">
-              <svg
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20.38 3.46 16 2 12 5 8 2 3.62 3.46a2 2 0 0 0-1.34 1.88v1.14a2 2 0 0 0 .78 1.58L7 11v10h10V11l3.94-2.94a2 2 0 0 0 .78-1.58V5.34a2 2 0 0 0-1.34-1.88Z" />
-              </svg>
-              <span className="text-xs font-medium uppercase tracking-widest">
-                Shirt Mockup
-              </span>
-            </div>
+        {/* Product image with upload overlay */}
+        <div className="relative mb-10 w-full max-w-sm">
+          <div className="overflow-hidden rounded-2xl bg-[var(--surface)] shadow-[0_2px_40px_rgba(0,0,0,0.06)]">
+            <img
+              src={designUrl}
+              alt="TGLW shirt design"
+              className="h-auto w-full"
+            />
+
+            {isCustomizing && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50">
+                <div className="flex flex-col items-center gap-3 text-white">
+                  <svg
+                    className="h-8 w-8 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium">
+                    Creating your design...
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleUpload}
+            className="hidden"
+          />
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isCustomizing}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-[var(--ink)] shadow-lg backdrop-blur transition hover:bg-white disabled:opacity-50"
+          >
+            {designUrl === '/design.png'
+              ? 'Upload your photo'
+              : 'Try another photo'}
+          </button>
+
+          {customizeError && (
+            <p className="mt-2 text-center text-sm text-red-500">
+              {customizeError}
+            </p>
+          )}
         </div>
 
         {/* Product info */}
@@ -55,7 +133,12 @@ function Store() {
         <p className="mt-4 text-xs text-[var(--ink-muted)]">Powered by x402</p>
       </div>
 
-      {showCheckout && <CheckoutForm onClose={() => setShowCheckout(false)} />}
+      {showCheckout && (
+        <CheckoutForm
+          onClose={() => setShowCheckout(false)}
+          designUrl={designUrl}
+        />
+      )}
     </main>
   )
 }
