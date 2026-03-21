@@ -1,5 +1,6 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import Header from '../components/Header'
+import WalletProvider from '../components/WalletProvider'
 
 import appCss from '../styles.css?url'
 
@@ -22,8 +23,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="font-sans antialiased">
-        <Header />
-        {children}
+        <WalletProvider>
+          <Header />
+          {children}
+        </WalletProvider>
         <Scripts />
       </body>
     </html>
