@@ -77,7 +77,7 @@ export const Route = createFileRoute('/api/customize')({
           body: JSON.stringify({
             model: 'grok-imagine-image',
             prompt:
-              'Replace the face of the robot character in <IMAGE_1> with the face from the photo in <IMAGE_0>. Keep the exact same cartoon/illustration art style, body, pose, text, and all other elements identical. Only change the face to match the person in <IMAGE_0>, rendered in the same cartoon style.',
+              'I need you to edit <IMAGE_1> with MINIMAL changes. This is a t-shirt design of a muscular robot character lifting a barbell with grass on the weights, with text "TEXT CLAUDE." at top, "TOUCH GRASS." in the middle, and "LIFT WEIGHTS." at the bottom. DO NOT regenerate or redraw the image. Make ONE small edit: replace ONLY the robot\'s face/head with the face of the person in <IMAGE_0>, drawn in the same cartoon/comic illustration style. Everything else must remain PIXEL-PERFECT identical: the full body, both legs, both arms, the barbell, the grass weights, the dirt ground, the lightning bolts, the text, the transparent/checkered background. Do not crop, resize, or recompose the image.',
             images: [
               { url: `data:${photoMime};base64,${photoBase64}` },
               { url: `data:image/png;base64,${designBase64}` },
