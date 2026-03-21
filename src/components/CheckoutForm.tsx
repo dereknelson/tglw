@@ -9,7 +9,10 @@ interface CheckoutFormProps {
   designUrl?: string
 }
 
-export default function CheckoutForm({ onClose, designUrl }: CheckoutFormProps) {
+export default function CheckoutForm({
+  onClose,
+  designUrl,
+}: CheckoutFormProps) {
   const { isConnected } = useAccount()
   const { data: walletClient } = useWalletClient()
   const [size, setSize] = useState<string>('L')

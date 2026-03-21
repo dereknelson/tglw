@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiCustomizeRouteImport } from './routes/api/customize'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCustomizeRoute = ApiCustomizeRouteImport.update({
+  id: '/api/customize',
+  path: '/api/customize',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
@@ -26,27 +32,31 @@ const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/checkout': typeof ApiCheckoutRoute
+  '/api/customize': typeof ApiCustomizeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/checkout': typeof ApiCheckoutRoute
+  '/api/customize': typeof ApiCustomizeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/checkout': typeof ApiCheckoutRoute
+  '/api/customize': typeof ApiCustomizeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/checkout'
+  fullPaths: '/' | '/api/checkout' | '/api/customize'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/checkout'
-  id: '__root__' | '/' | '/api/checkout'
+  to: '/' | '/api/checkout' | '/api/customize'
+  id: '__root__' | '/' | '/api/checkout' | '/api/customize'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
+  ApiCustomizeRoute: typeof ApiCustomizeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/customize': {
+      id: '/api/customize'
+      path: '/api/customize'
+      fullPath: '/api/customize'
+      preLoaderRoute: typeof ApiCustomizeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/checkout': {
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
+  ApiCustomizeRoute: ApiCustomizeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { createOrder, type ShippingInfo } from '../../server/apliiq'
+import { createOrder  } from '../../server/apliiq'
+import type {ShippingInfo} from '../../server/apliiq';
 
 const PAY_TO = process.env.X402_PAY_TO!
 const FACILITATOR_URL = 'https://x402.org/facilitator'

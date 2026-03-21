@@ -41,10 +41,7 @@ export const Route = createFileRoute('/api/customize')({
 
         const photo = formData.get('photo')
         if (!photo || !(photo instanceof File)) {
-          return Response.json(
-            { error: 'Missing photo file' },
-            { status: 400 },
-          )
+          return Response.json({ error: 'Missing photo file' }, { status: 400 })
         }
 
         // Validate file type
@@ -104,7 +101,7 @@ export const Route = createFileRoute('/api/customize')({
           data: Array<{ url?: string; b64_json?: string }>
         }
 
-        const imageUrl = grokData.data?.[0]?.url
+        const imageUrl = grokData.data[0]?.url
         if (!imageUrl) {
           return Response.json(
             { error: 'No image returned from generator' },
