@@ -1,8 +1,12 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { useAccount, useWalletClient } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
+const CardPaymentForm = lazy(() => import('./CardPaymentForm'))
+
 const VALID_SIZES = ['S', 'M', 'L', 'XL', '2XL'] as const
+
+type PaymentMethod = 'crypto' | 'card'
 
 interface CheckoutFormProps {
   onClose: () => void
@@ -31,22 +35,61 @@ export default function CheckoutForm({
   const [orderResult, setOrderResult] = useState<{
     order_id: string
     tx_hash: string | null
+    payment_method: string
+  } | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('crypto')
+  const [stripeInfo, setStripeInfo] = useState<{
+    clientSecret: string
+    paymentIntentId: string
+    publishableKey: string
   } | null>(null)
 
   function updateShipping(field: string, value: string) {
     setShipping((prev) => ({ ...prev, [field]: value }))
   }
 
-  async function handleCheckout() {
-    if (!isConnected) return
+  const shippingValid =
+    shipping.name &&
+    shipping.address1 &&
+    shipping.city &&
+    shipping.state &&
+    shipping.zip &&
+    shipping.country
+
+  async function initPayment() {
+    setStatus('paying')
+    setError('')
+
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shipping, size, designUrl }),
+      })
+
+      if (res.status === 402) {
+        const data = await res.json()
+        if (data.methods?.stripe) {
+          setStripeInfo(data.methods.stripe)
+        }
+        return data
+      }
+
+      throw new Error('Unexpected response')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to initialize payment')
+      setStatus('idle')
+      return null
+    }
+  }
+
+  async function handleCryptoCheckout() {
+    if (!isConnected || !walletClient) return
 
     setStatus('paying')
     setError('')
 
     try {
-      if (!walletClient) throw new Error('Wallet not connected')
-
-      // Import dynamically to avoid SSR issues
       const [
         { wrapFetchWithPayment, x402Client },
         { ExactEvmScheme, toClientEvmSigner },
@@ -76,6 +119,36 @@ export default function CheckoutForm({
       setStatus('success')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Checkout failed')
+      setStatus('error')
+    }
+  }
+
+  async function handleCardInit() {
+    const data = await initPayment()
+    if (!data) return
+  }
+
+  async function handleCardSuccess(paymentIntentId: string) {
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Stripe-Payment-Intent': paymentIntentId,
+        },
+        body: JSON.stringify({ shipping, size, designUrl }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Order creation failed')
+      }
+
+      const data = await res.json()
+      setOrderResult(data)
+      setStatus('success')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Order creation failed')
       setStatus('error')
     }
   }
@@ -204,34 +277,104 @@ export default function CheckoutForm({
           </div>
         </div>
 
-        {/* Wallet connect + pay */}
-        <div className="space-y-3">
-          {!isConnected ? (
-            <div className="flex justify-center">
-              <ConnectButton />
-            </div>
-          ) : (
+        {/* Payment method toggle */}
+        <div className="mb-4">
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-[var(--ink-muted)]">
+            Payment
+          </label>
+          <div className="flex gap-2">
             <button
               type="button"
-              onClick={handleCheckout}
-              disabled={
-                status === 'paying' ||
-                !shipping.name ||
-                !shipping.address1 ||
-                !shipping.city ||
-                !shipping.zip
-              }
-              className="w-full cursor-pointer rounded-full bg-[var(--accent)] px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => {
+                setPaymentMethod('crypto')
+                setStripeInfo(null)
+                setStatus('idle')
+              }}
+              className={`flex-1 rounded-lg border py-2.5 text-sm font-medium transition ${
+                paymentMethod === 'crypto'
+                  ? 'border-[var(--ink)] bg-[var(--ink)] text-white'
+                  : 'border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-muted)]'
+              }`}
             >
-              {status === 'paying' ? 'Processing...' : 'Pay $35 USDC'}
+              USDC
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPaymentMethod('card')
+                setStatus('idle')
+              }}
+              className={`flex-1 rounded-lg border py-2.5 text-sm font-medium transition ${
+                paymentMethod === 'card'
+                  ? 'border-[var(--ink)] bg-[var(--ink)] text-white'
+                  : 'border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-muted)]'
+              }`}
+            >
+              Card
+            </button>
+          </div>
+        </div>
+
+        {/* Payment area */}
+        <div className="space-y-3">
+          {paymentMethod === 'crypto' ? (
+            <>
+              {!isConnected ? (
+                <div className="flex justify-center">
+                  <ConnectButton />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleCryptoCheckout}
+                  disabled={status === 'paying' || !shippingValid}
+                  className="w-full cursor-pointer rounded-full bg-[var(--accent)] px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {status === 'paying' ? 'Processing...' : 'Pay $35 USDC'}
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              {stripeInfo ? (
+                <Suspense
+                  fallback={
+                    <div className="py-4 text-center text-sm text-[var(--ink-muted)]">
+                      Loading...
+                    </div>
+                  }
+                >
+                  <CardPaymentForm
+                    clientSecret={stripeInfo.clientSecret}
+                    publishableKey={stripeInfo.publishableKey}
+                    onSuccess={handleCardSuccess}
+                    onError={(err) => {
+                      setError(err)
+                      setStatus('error')
+                    }}
+                    disabled={status === 'paying'}
+                  />
+                </Suspense>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleCardInit}
+                  disabled={status === 'paying' || !shippingValid}
+                  className="w-full cursor-pointer rounded-full bg-[var(--accent)] px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {status === 'paying' ? 'Loading...' : 'Pay $35 Card'}
+                </button>
+              )}
+            </>
           )}
 
           {error && <p className="text-center text-sm text-red-500">{error}</p>}
         </div>
 
         <p className="mt-4 text-center text-xs text-[var(--ink-muted)]">
-          $35 USDC on Base · Powered by x402
+          {paymentMethod === 'crypto'
+            ? '$35 USDC on Base · Powered by x402'
+            : '$35.00 · Powered by Stripe'}
         </p>
       </div>
     </div>
