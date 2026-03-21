@@ -43,3 +43,51 @@ describe('createCheckoutPaymentIntent', () => {
     )
   })
 })
+
+describe('verifyPaymentIntent', () => {
+  it('returns verified: true when status is succeeded', async () => {
+    vi.resetModules()
+
+    const mockRetrieve = vi.fn().mockResolvedValue({
+      status: 'succeeded',
+      metadata: { size: 'L' },
+    })
+
+    vi.doMock('stripe', () => ({
+      default: class {
+        paymentIntents = { create: vi.fn(), retrieve: mockRetrieve }
+      },
+    }))
+
+    const { verifyPaymentIntent } = await import('./stripe')
+
+    const result = await verifyPaymentIntent('pi_test123')
+
+    expect(result.verified).toBe(true)
+    expect(result.metadata).toEqual({ size: 'L' })
+    expect(mockRetrieve).toHaveBeenCalledWith('pi_test123')
+  })
+
+  it('returns verified: false when status is not succeeded', async () => {
+    vi.resetModules()
+
+    const mockRetrieve = vi.fn().mockResolvedValue({
+      status: 'requires_payment_method',
+      metadata: {},
+    })
+
+    vi.doMock('stripe', () => ({
+      default: class {
+        paymentIntents = { create: vi.fn(), retrieve: mockRetrieve }
+      },
+    }))
+
+    const { verifyPaymentIntent } = await import('./stripe')
+
+    const result = await verifyPaymentIntent('pi_test456')
+
+    expect(result.verified).toBe(false)
+    expect(result.metadata).toEqual({})
+    expect(mockRetrieve).toHaveBeenCalledWith('pi_test456')
+  })
+})

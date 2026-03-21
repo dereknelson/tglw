@@ -7,7 +7,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export { stripe }
 
-interface CheckoutPaymentInput {
+/** $35.00 in cents */
+const CHECKOUT_AMOUNT_CENTS = 3500
+
+export interface CheckoutPaymentInput {
   shipping: ShippingInfo
   size: string
   designUrl?: string
@@ -17,7 +20,7 @@ export async function createCheckoutPaymentIntent(input: CheckoutPaymentInput) {
   const { shipping, size, designUrl } = input
 
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: 3500,
+    amount: CHECKOUT_AMOUNT_CENTS,
     currency: 'usd',
     payment_method_types: ['card'],
     metadata: {
