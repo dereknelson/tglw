@@ -1,30 +1,25 @@
-import { WagmiProvider, http } from 'wagmi'
-import { base } from 'wagmi/chains'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit'
-import '@rainbow-me/rainbowkit/styles.css'
+import { lazy, Suspense, useEffect, useState } from 'react'
 
-const config = getDefaultConfig({
-  appName: 'TGLW',
-  projectId: 'tglw-store', // WalletConnect project ID — get from cloud.walletconnect.com for production
-  chains: [base],
-  transports: {
-    [base.id]: http(),
-  },
-})
-
-const queryClient = new QueryClient()
+const WalletProviderInner = lazy(() => import('./WalletProviderInner'))
 
 export default function WalletProvider({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <>{children}</>
+  }
+
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>{children}</RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <Suspense fallback={<>{children}</>}>
+      <WalletProviderInner>{children}</WalletProviderInner>
+    </Suspense>
   )
 }
