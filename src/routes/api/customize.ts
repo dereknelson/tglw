@@ -82,7 +82,7 @@ export const Route = createFileRoute('/api/customize')({
               { url: `data:${photoMime};base64,${photoBase64}` },
               { url: `data:image/png;base64,${designBase64}` },
             ],
-            n: 2,
+            n: 1,
             resolution: '2k',
             response_format: 'url',
           }),
