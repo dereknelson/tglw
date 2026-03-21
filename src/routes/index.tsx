@@ -1,8 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
+import CheckoutForm from '../components/CheckoutForm'
 
 export const Route = createFileRoute('/')({ component: Store })
 
 function Store() {
+  const [showCheckout, setShowCheckout] = useState(false)
+
   return (
     <main className="flex min-h-svh flex-col items-center justify-center px-6 pt-20 pb-12">
       <div className="rise-in flex w-full max-w-md flex-col items-center text-center">
@@ -42,16 +46,18 @@ function Store() {
 
         <button
           type="button"
+          onClick={() => setShowCheckout(true)}
           className="w-full max-w-xs cursor-pointer rounded-full bg-[var(--accent)] px-8 py-4 text-sm font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98]"
-          onClick={() => {
-            // x402 checkout — wired up later
-          }}
         >
           Buy Now
         </button>
 
         <p className="mt-4 text-xs text-[var(--ink-muted)]">Powered by x402</p>
       </div>
+
+      {showCheckout && (
+        <CheckoutForm onClose={() => setShowCheckout(false)} />
+      )}
     </main>
   )
 }
