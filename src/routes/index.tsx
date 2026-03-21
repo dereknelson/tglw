@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useRef, lazy, Suspense } from 'react'
-
-const CheckoutForm = lazy(() => import('../components/CheckoutForm'))
+import { useState, useRef } from 'react'
+import CheckoutForm from '../components/CheckoutForm'
 
 export const Route = createFileRoute('/')({ component: Store })
 
@@ -139,12 +138,10 @@ function Store() {
       </div>
 
       {showCheckout && (
-        <Suspense>
-          <CheckoutForm
-            onClose={() => setShowCheckout(false)}
-            designUrl={designUrl}
-          />
-        </Suspense>
+        <CheckoutForm
+          onClose={() => setShowCheckout(false)}
+          designUrl={designUrl}
+        />
       )}
     </main>
   )

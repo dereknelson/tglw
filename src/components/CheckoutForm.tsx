@@ -1,7 +1,6 @@
 import { useState, lazy, Suspense } from 'react'
-import { useAccount, useWalletClient } from 'wagmi'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 
+const CryptoPayment = lazy(() => import('./CryptoPayment'))
 const CardPaymentForm = lazy(() => import('./CardPaymentForm'))
 
 const VALID_SIZES = ['S', 'M', 'L', 'XL', '2XL'] as const
@@ -17,8 +16,6 @@ export default function CheckoutForm({
   onClose,
   designUrl,
 }: CheckoutFormProps) {
-  const { isConnected } = useAccount()
-  const { data: walletClient } = useWalletClient()
   const [size, setSize] = useState<string>('L')
   const [shipping, setShipping] = useState({
     name: '',
@@ -72,6 +69,7 @@ export default function CheckoutForm({
         if (data.methods?.stripe) {
           setStripeInfo(data.methods.stripe)
         }
+        setStatus('idle')
         return data
       }
 
@@ -80,46 +78,6 @@ export default function CheckoutForm({
       setError(err instanceof Error ? err.message : 'Failed to initialize payment')
       setStatus('idle')
       return null
-    }
-  }
-
-  async function handleCryptoCheckout() {
-    if (!isConnected || !walletClient) return
-
-    setStatus('paying')
-    setError('')
-
-    try {
-      const [
-        { wrapFetchWithPayment, x402Client },
-        { ExactEvmScheme, toClientEvmSigner },
-      ] = await Promise.all([import('@x402/fetch'), import('@x402/evm')])
-
-      const signer = toClientEvmSigner(walletClient as any)
-      const client = new x402Client().register(
-        'eip155:8453',
-        new ExactEvmScheme(signer),
-      )
-
-      const fetchWithPayment = wrapFetchWithPayment(fetch, client)
-
-      const res = await fetchWithPayment('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shipping, size, designUrl }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || `Request failed: ${res.status}`)
-      }
-
-      const data = await res.json()
-      setOrderResult(data)
-      setStatus('success')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Checkout failed')
-      setStatus('error')
     }
   }
 
@@ -318,22 +276,30 @@ export default function CheckoutForm({
         {/* Payment area */}
         <div className="space-y-3">
           {paymentMethod === 'crypto' ? (
-            <>
-              {!isConnected ? (
-                <div className="flex justify-center">
-                  <ConnectButton />
+            <Suspense
+              fallback={
+                <div className="py-4 text-center text-sm text-[var(--ink-muted)]">
+                  Loading...
                 </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleCryptoCheckout}
-                  disabled={status === 'paying' || !shippingValid}
-                  className="w-full cursor-pointer rounded-full bg-[var(--accent)] px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {status === 'paying' ? 'Processing...' : 'Pay $35 USDC'}
-                </button>
-              )}
-            </>
+              }
+            >
+              <CryptoPayment
+                shipping={shipping}
+                size={size}
+                designUrl={designUrl}
+                shippingValid={!!shippingValid}
+                status={status}
+                onStatusChange={setStatus}
+                onError={(err) => {
+                  setError(err)
+                  setStatus('error')
+                }}
+                onSuccess={(result) => {
+                  setOrderResult(result)
+                  setStatus('success')
+                }}
+              />
+            </Suspense>
           ) : (
             <>
               {stripeInfo ? (
