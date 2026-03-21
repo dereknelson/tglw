@@ -13,8 +13,10 @@
   --bg: #fafafa;
   --surface: #ffffff;
   --line: rgba(0, 0, 0, 0.08);
-  --accent: #111111;
-  --accent-hover: #333333;
+  --accent: #1a8a2e;
+  --accent-hover: #157125;
+  --green: #1a8a2e;
+  --green-soft: #e8f5e9;
 }
 
 * {
@@ -49,7 +51,7 @@ button {
 }
 
 .rise-in {
-  animation: rise-in 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: rise-in 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes rise-in {
@@ -61,4 +63,44 @@ button {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.tshirt-frame {
+  position: relative;
+  display: inline-block;
+}
+
+.tshirt-frame svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 24px rgba(0, 0, 0, 0.10));
+}
+
+.tshirt-frame img {
+  position: absolute;
+  top: 30%;
+  left: 27%;
+  width: 46%;
+  height: auto;
+  pointer-events: none;
+  border-radius: 4px;
+  mix-blend-mode: screen;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(26, 138, 46, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(26, 138, 46, 0); }
+}
+
+.pulse-green {
+  animation: pulse-green 2s ease-in-out infinite;
 }

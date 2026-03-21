@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiCustomizeRouteImport } from './routes/api/customize'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
+import { Route as ApiCheckoutWebhookRouteImport } from './routes/api/checkout/webhook'
 import { Route as ApiCheckoutCreateIntentRouteImport } from './routes/api/checkout/create-intent'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
   path: '/api/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCheckoutWebhookRoute = ApiCheckoutWebhookRouteImport.update({
+  id: '/webhook',
+  path: '/webhook',
+  getParentRoute: () => ApiCheckoutRoute,
+} as any)
 const ApiCheckoutCreateIntentRoute = ApiCheckoutCreateIntentRouteImport.update({
   id: '/create-intent',
   path: '/create-intent',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/api/checkout': typeof ApiCheckoutRouteWithChildren
   '/api/customize': typeof ApiCustomizeRoute
   '/api/checkout/create-intent': typeof ApiCheckoutCreateIntentRoute
+  '/api/checkout/webhook': typeof ApiCheckoutWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/checkout': typeof ApiCheckoutRouteWithChildren
   '/api/customize': typeof ApiCustomizeRoute
   '/api/checkout/create-intent': typeof ApiCheckoutCreateIntentRoute
+  '/api/checkout/webhook': typeof ApiCheckoutWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,6 +61,7 @@ export interface FileRoutesById {
   '/api/checkout': typeof ApiCheckoutRouteWithChildren
   '/api/customize': typeof ApiCustomizeRoute
   '/api/checkout/create-intent': typeof ApiCheckoutCreateIntentRoute
+  '/api/checkout/webhook': typeof ApiCheckoutWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -61,14 +70,21 @@ export interface FileRouteTypes {
     | '/api/checkout'
     | '/api/customize'
     | '/api/checkout/create-intent'
+    | '/api/checkout/webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/checkout' | '/api/customize' | '/api/checkout/create-intent'
+  to:
+    | '/'
+    | '/api/checkout'
+    | '/api/customize'
+    | '/api/checkout/create-intent'
+    | '/api/checkout/webhook'
   id:
     | '__root__'
     | '/'
     | '/api/checkout'
     | '/api/customize'
     | '/api/checkout/create-intent'
+    | '/api/checkout/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -100,6 +116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/checkout/webhook': {
+      id: '/api/checkout/webhook'
+      path: '/webhook'
+      fullPath: '/api/checkout/webhook'
+      preLoaderRoute: typeof ApiCheckoutWebhookRouteImport
+      parentRoute: typeof ApiCheckoutRoute
+    }
     '/api/checkout/create-intent': {
       id: '/api/checkout/create-intent'
       path: '/create-intent'
@@ -112,10 +135,12 @@ declare module '@tanstack/react-router' {
 
 interface ApiCheckoutRouteChildren {
   ApiCheckoutCreateIntentRoute: typeof ApiCheckoutCreateIntentRoute
+  ApiCheckoutWebhookRoute: typeof ApiCheckoutWebhookRoute
 }
 
 const ApiCheckoutRouteChildren: ApiCheckoutRouteChildren = {
   ApiCheckoutCreateIntentRoute: ApiCheckoutCreateIntentRoute,
+  ApiCheckoutWebhookRoute: ApiCheckoutWebhookRoute,
 }
 
 const ApiCheckoutRouteWithChildren = ApiCheckoutRoute._addFileChildren(
