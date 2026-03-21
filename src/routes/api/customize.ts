@@ -75,12 +75,11 @@ export const Route = createFileRoute('/api/customize')({
             Authorization: `Bearer ${XAI_API_KEY}`,
           },
           body: JSON.stringify({
-            model: 'grok-imagine-image',
+            model: 'grok-imagine-image-pro',
             prompt:
-              'I need you to edit <IMAGE_1> with MINIMAL changes. This is a t-shirt design of a half-human half-robot character lifting a barbell with grass on the weights. The left side is human (holding a phone) and the right side is robot/cyborg. Text reads "TEXT CLAUDE." at top, "TOUCH GRASS." in green in the middle, and "LIFT WEIGHTS." at the bottom. DO NOT regenerate or redraw the image. Make ONE small edit: replace ONLY the human half of the face with the face of the person in <IMAGE_0>, drawn in the same cartoon/comic illustration style. Keep the same exact dimensions and aspect ratio as <IMAGE_1>. Everything else must remain PIXEL-PERFECT identical: the full body, both legs (both feet visible on the dirt ground), both arms, the phone, the barbell, the grass weights, the dirt ground, all three lines of text, and the white background. Do not crop, resize, recompose, or zoom into the image.',
+              'Using the face of the person in <IMAGE_0>, create a t-shirt design illustration in cartoon/comic style: a muscular half-human half-robot character lifting a barbell overhead with grass growing on the weight plates. The left half of the body is human (holding a phone in the left hand) and the right half is robot/cyborg. The human side of the face should look like the person in <IMAGE_0> drawn in cartoon style. The character stands on a dirt mound with small grass sprouts. Text "TEXT CLAUDE." in bold black collegiate font at the top, "TOUCH GRASS." in bold green in the middle, and "LIFT WEIGHTS." in bold black collegiate font at the bottom. White/clean background. Full body visible with both feet on the ground.',
             images: [
               { url: `data:${photoMime};base64,${photoBase64}` },
-              { url: `data:image/png;base64,${designBase64}` },
             ],
             n: 1,
             resolution: '2k',
