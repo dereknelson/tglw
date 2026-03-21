@@ -20,9 +20,9 @@ export default function CheckoutForm({ onClose }: CheckoutFormProps) {
     zip: '',
     country: 'US',
   })
-  const [status, setStatus] = useState<
-    'idle' | 'paying' | 'success' | 'error'
-  >('idle')
+  const [status, setStatus] = useState<'idle' | 'paying' | 'success' | 'error'>(
+    'idle',
+  )
   const [error, setError] = useState('')
   const [orderResult, setOrderResult] = useState<{
     order_id: string
@@ -223,9 +223,7 @@ export default function CheckoutForm({ onClose }: CheckoutFormProps) {
             </button>
           )}
 
-          {error && (
-            <p className="text-center text-sm text-red-500">{error}</p>
-          )}
+          {error && <p className="text-center text-sm text-red-500">{error}</p>}
         </div>
 
         <p className="mt-4 text-center text-xs text-[var(--ink-muted)]">

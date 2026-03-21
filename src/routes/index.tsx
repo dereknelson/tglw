@@ -55,9 +55,7 @@ function Store() {
         <p className="mt-4 text-xs text-[var(--ink-muted)]">Powered by x402</p>
       </div>
 
-      {showCheckout && (
-        <CheckoutForm onClose={() => setShowCheckout(false)} />
-      )}
+      {showCheckout && <CheckoutForm onClose={() => setShowCheckout(false)} />}
     </main>
   )
 }

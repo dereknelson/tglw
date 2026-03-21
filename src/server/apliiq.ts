@@ -2,11 +2,7 @@ import { createHmac } from 'node:crypto'
 
 const APLIIQ_BASE = 'https://api.apliiq.com/api'
 
-function buildAuthHeader(
-  method: string,
-  path: string,
-  body: string,
-): string {
+function buildAuthHeader(method: string, path: string, body: string): string {
   const appKey = process.env.APLIIQ_APP_KEY!
   const sharedSecret = process.env.APLIIQ_SHARED_SECRET!
   const rts = Math.floor(Date.now() / 1000).toString()
