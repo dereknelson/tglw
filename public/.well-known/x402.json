@@ -1,0 +1,31 @@
+{
+  "name": "TGLW — Lift Weights Touch Grass",
+  "description": "Single-product t-shirt store powered by x402 payments",
+  "products": [
+    {
+      "id": "tglw-black-tee",
+      "name": "Lift Weights Touch Grass Tee",
+      "description": "Black tee with palm tree + sun graphic",
+      "price": "35.00",
+      "currency": "USDC",
+      "network": "eip155:8453",
+      "sizes": ["S", "M", "L", "XL", "2XL"],
+      "checkout": {
+        "endpoint": "/api/checkout",
+        "method": "POST",
+        "protocol": "x402",
+        "body_schema": {
+          "shipping": {
+            "name": "string",
+            "address1": "string",
+            "city": "string",
+            "state": "string",
+            "zip": "string",
+            "country": "string (ISO 2-letter)"
+          },
+          "size": "string (S|M|L|XL|2XL)"
+        }
+      }
+    }
+  ]
+}

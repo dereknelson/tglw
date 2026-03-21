@@ -1,0 +1,31 @@
+# TGLW — Lift Weights Touch Grass
+
+## Product
+Black tee with palm tree + sun graphic. "LIFT WEIGHTS TOUCH GRASS."
+100% cotton. $35 USD.
+
+## Sizes
+S, M, L, XL, 2XL
+
+## How to Buy
+POST /api/checkout
+Payment: $35 USDC on Base (x402 protocol)
+
+Request body:
+{
+  "shipping": {
+    "name": "Your Name",
+    "address1": "123 Main St",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90001",
+    "country": "US"
+  },
+  "size": "L"
+}
+
+The endpoint is x402-protected. Send your payment signature in the Payment-Signature header.
+On success, you'll receive an order confirmation with tracking details.
+
+## Structured Data
+See /.well-known/x402.json for machine-parseable product and payment info.
