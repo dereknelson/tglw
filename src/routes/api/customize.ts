@@ -93,6 +93,7 @@ export const Route = createFileRoute('/api/customize')({
 
           const isCredits =
             grokRes.status === 429 ||
+            grokRes.status === 403 ||
             errText.includes('credit') ||
             errText.includes('quota') ||
             errText.includes('rate')
