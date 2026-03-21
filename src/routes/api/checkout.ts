@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createOrder } from '../../server/apliiq'
 import {
+  stripe,
   verifyPaymentIntent,
   createCheckoutPaymentIntent,
 } from '../../server/stripe'
@@ -84,8 +85,11 @@ export const Route = createFileRoute('/api/checkout')({
           request.headers.get('Payment-Signature') ||
           request.headers.get('X-Payment')
 
+        // Check for MPP / SPT agent card payment
+        const sptTokenHeader = request.headers.get('X-Shared-Payment-Token')
+
         // No payment header — return 402 with all accepted methods
-        if (!stripePaymentIntentId && !paymentSignature) {
+        if (!stripePaymentIntentId && !paymentSignature && !sptTokenHeader) {
           let stripeClientSecret: string | null = null
           let stripePaymentId: string | null = null
           try {
@@ -167,6 +171,62 @@ export const Route = createFileRoute('/api/checkout')({
             payment_method: 'card',
             message: 'Your shirt is on the way.',
           })
+        }
+
+        // === MPP / SPT agent card payment path ===
+        if (sptTokenHeader) {
+          try {
+            const pi = await stripe.paymentIntents.create({
+              amount: 3500,
+              currency: 'usd',
+              shared_payment_granted_token: sptTokenHeader,
+              confirm: true,
+              metadata: {
+                shipping_name: shipping.name,
+                shipping_address1: shipping.address1,
+                shipping_city: shipping.city,
+                shipping_state: shipping.state,
+                shipping_zip: shipping.zip,
+                shipping_country: shipping.country,
+                size,
+                ...(body.designUrl ? { designUrl: body.designUrl } : {}),
+              },
+            } as any)
+
+            if (pi.status !== 'succeeded') {
+              return Response.json(
+                { error: 'SPT payment not confirmed', status: pi.status },
+                { status: 402 },
+              )
+            }
+
+            let orderResult: { orderId: string; status: string }
+            try {
+              orderResult = await createOrder(shipping, size, body.designUrl)
+            } catch (err) {
+              console.error('Apliiq order creation failed:', err)
+              return Response.json(
+                {
+                  error:
+                    'Order fulfillment failed. Payment was captured. Contact support.',
+                },
+                { status: 500 },
+              )
+            }
+
+            return Response.json({
+              order_id: orderResult.orderId,
+              status: orderResult.status,
+              payment_method: 'spt',
+              message: 'Your shirt is on the way.',
+            })
+          } catch (err) {
+            console.error('SPT payment failed:', err)
+            return Response.json(
+              { error: 'SPT payment failed' },
+              { status: 402 },
+            )
+          }
         }
 
         // === x402 crypto payment path ===
