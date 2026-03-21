@@ -109,6 +109,10 @@ function Store() {
               {customizeError}
             </p>
           )}
+
+          <p className="mt-3 text-xs leading-relaxed text-[var(--ink-muted)]">
+            For best results: face clearly visible, good lighting, front-facing
+          </p>
         </div>
 
         {/* Product info */}
