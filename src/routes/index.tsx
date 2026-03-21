@@ -30,8 +30,7 @@ function Store() {
         </div>
 
         {/* Product info */}
-        <h1 className="mb-3 font-[var(--font-serif)] text-3xl font-medium tracking-tight text-[var(--ink)] sm:text-4xl"
-            style={{ fontFamily: 'var(--font-serif)' }}>
+        <h1 className="mb-3 font-[var(--font-serif)] text-3xl font-medium tracking-tight text-[var(--ink)] sm:text-4xl">
           Lift Weights Touch Grass
         </h1>
 
