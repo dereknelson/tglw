@@ -3,6 +3,10 @@ import { constructWebhookEvent } from '../../../server/stripe'
 import { createOrder } from '../../../server/apliiq'
 import type { ShippingInfo } from '../../../server/apliiq'
 
+// In-memory idempotency guard to prevent duplicate orders from webhook retries.
+// In production, replace with Redis or a database check.
+const processedPaymentIntents = new Set<string>()
+
 export const Route = createFileRoute('/api/checkout/webhook')({
   server: {
     handlers: {
@@ -27,6 +31,12 @@ export const Route = createFileRoute('/api/checkout/webhook')({
             id: string
             metadata: Record<string, string>
           }
+
+          if (processedPaymentIntents.has(pi.id)) {
+            console.log(`Webhook: already processed PI ${pi.id}, skipping`)
+            return Response.json({ received: true })
+          }
+          processedPaymentIntents.add(pi.id)
 
           const { metadata } = pi
           const shipping: ShippingInfo = {

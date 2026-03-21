@@ -1,5 +1,5 @@
 // src/components/CardPaymentForm.tsx
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Elements,
   CardElement,
@@ -71,7 +71,10 @@ function CardForm({
 }
 
 export default function CardPaymentForm(props: CardPaymentFormProps) {
-  const stripePromise = loadStripe(props.publishableKey)
+  const stripePromise = useMemo(
+    () => loadStripe(props.publishableKey),
+    [props.publishableKey],
+  )
 
   return (
     <Elements stripe={stripePromise} options={{ clientSecret: props.clientSecret }}>
