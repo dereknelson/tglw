@@ -34,5 +34,26 @@ Header: X-Shared-Payment-Token: spt_...
 
 Same request body as above. Create an SPT scoped to this merchant, include it in the header, and the checkout is fully automated.
 
+## How to Buy (ENS Direct Pay)
+Send $25 USDC on Base to computa.eth (0x08379e7d313a0781612c9624741b38a263f499f6).
+Then claim your order:
+
+POST /api/claim
+{
+  "tx_hash": "0x...",
+  "signature": "0x... (personal_sign of tx_hash proving wallet ownership)",
+  "size": "L",
+  "shipping": {
+    "name": "Your Name",
+    "address1": "123 Main St",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90001",
+    "country": "US"
+  }
+}
+
+GET /api/claim?tx=0x... — check if a transaction has been claimed.
+
 ## Structured Data
 See /.well-known/x402.json for machine-parseable product and payment info.

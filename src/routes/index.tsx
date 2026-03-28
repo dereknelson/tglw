@@ -139,6 +139,12 @@ function Store() {
         <p className="mt-3 text-xs text-[var(--ink-muted)]">
           Pay with USDC or Card
         </p>
+        <a
+          href="/claim"
+          className="mt-1 inline-block text-xs text-[var(--ink-muted)] underline hover:text-[var(--ink-soft)]"
+        >
+          Already sent USDC to computa.eth? Claim here
+        </a>
       </div>
 
       {/* Footer */}
