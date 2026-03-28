@@ -27,5 +27,12 @@ Request body:
 The endpoint is x402-protected. Send your payment signature in the Payment-Signature header.
 On success, you'll receive an order confirmation with tracking details.
 
+## How to Buy (Agent / SPT)
+POST /api/checkout
+Payment: Stripe SPT (Shared Payment Token)
+Header: X-Shared-Payment-Token: spt_...
+
+Same request body as above. Create an SPT scoped to this merchant, include it in the header, and the checkout is fully automated.
+
 ## Structured Data
 See /.well-known/x402.json for machine-parseable product and payment info.

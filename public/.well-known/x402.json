@@ -14,6 +14,7 @@
         "endpoint": "/api/checkout",
         "method": "POST",
         "protocol": "x402",
+        "payment_methods": ["x402", "stripe_card", "stripe_spt"],
         "body_schema": {
           "shipping": {
             "name": "string",
