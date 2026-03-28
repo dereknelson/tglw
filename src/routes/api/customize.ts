@@ -86,7 +86,7 @@ export const Route = createFileRoute('/api/customize')({
           body: JSON.stringify({
             model: 'grok-imagine-image-pro',
             prompt:
-              'Using the face of the person in <IMAGE_0>, create a t-shirt design illustration in cartoon/comic style: a muscular half-human half-robot character lifting a barbell overhead with grass growing on the weight plates. The left half of the body is human (holding a phone in the left hand) and the right half is robot/cyborg. The human side of the face should look like the person in <IMAGE_0> drawn in cartoon style. The character stands on a dirt mound with small grass sprouts. Text "TEXT CLAUDE." in bold black collegiate font at the top, "TOUCH GRASS." in bold green in the middle, and "LIFT WEIGHTS." in bold black collegiate font at the bottom. White/clean background. Full body visible with both feet on the ground.',
+              'Using the face of the person in <IMAGE_0>, create a t-shirt design illustration in cartoon/comic style: a muscular half-human half-robot character lifting a barbell overhead with grass growing on the weight plates. The left half of the body is human (holding a phone in the left hand) and the right half is robot/cyborg. The human side of the face should look like the person in <IMAGE_0> drawn in cartoon style. The character stands on a dirt mound with small grass sprouts. Text "TOUCH GRASS." in bold green at the top, "LIFT WEIGHTS." in bold black collegiate font in the middle, and "TEXT COMPUTA." in bold black collegiate font at the bottom. White/clean background. Full body visible with both feet on the ground.',
             images: [
               { url: `data:${photoMime};base64,${photoBase64}` },
             ],

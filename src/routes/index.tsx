@@ -51,11 +51,11 @@ function Store() {
       <div className="flex w-full max-w-xl flex-col items-center text-center">
         {/* Tagline + Title */}
         <h1 className="mb-3 text-3xl font-bold tracking-tight text-[var(--ink)] sm:text-4xl">
-          Text Claude.
-          <br />
           <span className="text-[var(--green)]">Touch Grass.</span>
           <br />
           Lift Weights.
+          <br />
+          Text Computa.
         </h1>
         <p className="mb-4 max-w-sm text-base leading-relaxed text-[var(--ink-soft)]">
           The official tee for cyborgs who split their time between the squat rack
