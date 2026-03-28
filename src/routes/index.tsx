@@ -51,7 +51,7 @@ function Store() {
       <div className="flex w-full max-w-xl flex-col items-center text-center">
         {/* Tagline + Title */}
         <h1 className="mb-3 text-3xl font-bold tracking-tight text-[var(--ink)] sm:text-4xl">
-          <span className="text-[var(--green)]">Touch Grass.</span>
+          Touch Grass.
           <br />
           Lift Weights.
           <br />
