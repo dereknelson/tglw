@@ -20,6 +20,9 @@ const config = defineConfig({
   resolve: {
     dedupe: ['react', 'react-dom'],
   },
+  ssr: {
+    noExternal: ['@rainbow-me/rainbowkit', '@vanilla-extract/sprinkles'],
+  },
 })
 
 export default config
