@@ -78,9 +78,9 @@ button {
 
 .tshirt-design {
   position: absolute;
-  top: 20%;
-  left: 24%;
-  width: 52%;
+  top: 28%;
+  left: 30%;
+  width: 40%;
   height: auto;
   pointer-events: none;
 }
