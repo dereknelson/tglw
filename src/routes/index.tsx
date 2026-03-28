@@ -8,7 +8,7 @@ export const Route = createFileRoute('/')({ component: Store })
 
 function Store() {
   const [showCheckout, setShowCheckout] = useState(false)
-  const [designUrl, setDesignUrl] = useState('/design.png')
+  const [designUrl, setDesignUrl] = useState('/tglw.png')
   const [isCustomizing, setIsCustomizing] = useState(false)
   const [customizeError, setCustomizeError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -48,7 +48,7 @@ function Store() {
   return (
     <main className="flex min-h-svh flex-col items-center px-6 pt-14 pb-16">
       {/* Hero section */}
-      <div className="flex w-full max-w-lg flex-col items-center text-center">
+      <div className="flex w-full max-w-xl flex-col items-center text-center">
         {/* Tagline + Title */}
         <h1 className="mb-3 text-3xl font-bold tracking-tight text-[var(--ink)] sm:text-4xl">
           Text Claude.
@@ -57,13 +57,13 @@ function Store() {
           <br />
           Lift Weights.
         </h1>
-        <p className="mb-10 max-w-sm text-base leading-relaxed text-[var(--ink-soft)]">
+        <p className="mb-4 max-w-sm text-base leading-relaxed text-[var(--ink-soft)]">
           The official tee for cyborgs who split their time between the squat rack
           and the terminal. 100% cotton. 0% synthetic consciousness.
         </p>
 
         {/* T-shirt mockup */}
-        <div className="relative mb-8 w-full">
+        <div className="relative mb-4 w-full">
           {isCustomizing ? (
             <div className="flex h-[460px] items-center justify-center rounded-2xl bg-[var(--surface)]">
               <div className="flex flex-col items-center gap-3">
@@ -109,13 +109,13 @@ function Store() {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isCustomizing}
-          className="mb-8 flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface)] px-5 py-2.5 text-sm font-medium text-[var(--ink)] shadow-sm transition hover:shadow-md hover:border-[var(--green)] disabled:opacity-50"
+          className="mb-4 flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface)] px-5 py-2.5 text-sm font-medium text-[var(--ink)] shadow-sm transition hover:shadow-md hover:border-[var(--green)] disabled:opacity-50"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
             <circle cx="12" cy="13" r="4" />
           </svg>
-          {designUrl === '/design.png'
+          {designUrl === '/tglw.png'
             ? 'Put your face on it'
             : 'Try another face'}
         </button>
@@ -126,7 +126,7 @@ function Store() {
           </p>
         )}
 
-        <p className="mb-6 text-3xl font-bold text-[var(--ink)]">$35</p>
+        <p className="mb-3 text-3xl font-bold text-[var(--ink)]">$35</p>
 
         <button
           type="button"

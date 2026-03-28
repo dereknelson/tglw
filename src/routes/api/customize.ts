@@ -9,7 +9,7 @@ let baseDesignBase64: string | null = null
 async function getBaseDesign(requestUrl: string): Promise<string> {
   if (!baseDesignBase64) {
     const origin = new URL(requestUrl).origin
-    const res = await fetch(`${origin}/design.png`)
+    const res = await fetch(`${origin}/tglw.png`)
     const buffer = Buffer.from(await res.arrayBuffer())
     baseDesignBase64 = buffer.toString('base64')
   }

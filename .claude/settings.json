@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tglw-buy": {
+      "command": "npx",
+      "args": ["tsx", "/Users/derek/projects/tglw/mcp/src/index.ts"]
+    }
+  }
+}
