@@ -17,6 +17,9 @@ const config = defineConfig({
     nitro(),
     viteReact(),
   ],
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
 })
 
 export default config

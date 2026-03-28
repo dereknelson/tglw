@@ -1,4 +1,7 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
+import { Elements, AddressElement } from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
+import type { StripeAddressElementChangeEvent } from '@stripe/stripe-js'
 
 const CryptoPayment = lazy(() => import('./CryptoPayment'))
 const CardPaymentForm = lazy(() => import('./CardPaymentForm'))
@@ -12,19 +15,22 @@ interface CheckoutFormProps {
   designUrl?: string
 }
 
-export default function CheckoutForm({
+interface ShippingData {
+  name: string
+  address1: string
+  city: string
+  state: string
+  zip: string
+  country: string
+}
+
+function CheckoutFormInner({
   onClose,
   designUrl,
 }: CheckoutFormProps) {
   const [size, setSize] = useState<string>('L')
-  const [shipping, setShipping] = useState({
-    name: '',
-    address1: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: 'US',
-  })
+  const [shipping, setShipping] = useState<ShippingData | null>(null)
+  const [shippingComplete, setShippingComplete] = useState(false)
   const [status, setStatus] = useState<'idle' | 'paying' | 'success' | 'error'>(
     'idle',
   )
@@ -34,26 +40,32 @@ export default function CheckoutForm({
     tx_hash: string | null
     payment_method: string
   } | null>(null)
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('crypto')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
   const [stripeInfo, setStripeInfo] = useState<{
     clientSecret: string
     paymentIntentId: string
     publishableKey: string
   } | null>(null)
 
-  function updateShipping(field: string, value: string) {
-    setShipping((prev) => ({ ...prev, [field]: value }))
+  function handleAddressChange(event: StripeAddressElementChangeEvent) {
+    setShippingComplete(event.complete)
+    if (event.complete) {
+      const addr = event.value.address
+      setShipping({
+        name: event.value.name,
+        address1: addr.line1,
+        city: addr.city,
+        state: addr.state,
+        zip: addr.postal_code,
+        country: addr.country,
+      })
+    } else {
+      setShipping(null)
+    }
   }
 
-  const shippingValid =
-    shipping.name &&
-    shipping.address1 &&
-    shipping.city &&
-    shipping.state &&
-    shipping.zip &&
-    shipping.country
-
   async function initPayment() {
+    if (!shipping) return null
     setStatus('paying')
     setError('')
 
@@ -82,11 +94,11 @@ export default function CheckoutForm({
   }
 
   async function handleCardInit() {
-    const data = await initPayment()
-    if (!data) return
+    await initPayment()
   }
 
   async function handleCardSuccess(paymentIntentId: string) {
+    if (!shipping) return
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -110,9 +122,6 @@ export default function CheckoutForm({
       setStatus('error')
     }
   }
-
-  const inputClass =
-    'w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)] transition'
 
   if (status === 'success' && orderResult) {
     return (
@@ -147,7 +156,7 @@ export default function CheckoutForm({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="rise-in w-full max-w-sm rounded-2xl bg-[var(--surface)] p-6 shadow-xl">
+      <div className="rise-in w-full max-w-sm rounded-2xl bg-[var(--surface)] p-6 shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Checkout</h2>
           <button
@@ -182,57 +191,19 @@ export default function CheckoutForm({
           </div>
         </div>
 
-        {/* Shipping fields */}
-        <div className="mb-5 space-y-3">
+        {/* Shipping — Stripe Address Element */}
+        <div className="mb-5">
           <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-[var(--ink-muted)]">
             Shipping
           </label>
-          <input
-            type="text"
-            placeholder="Full name"
-            value={shipping.name}
-            onChange={(e) => updateShipping('name', e.target.value)}
-            className={inputClass}
+          <AddressElement
+            options={{
+              mode: 'shipping',
+              autocomplete: { mode: 'automatic' },
+              allowedCountries: ['US'],
+            }}
+            onChange={handleAddressChange}
           />
-          <input
-            type="text"
-            placeholder="Address"
-            value={shipping.address1}
-            onChange={(e) => updateShipping('address1', e.target.value)}
-            className={inputClass}
-          />
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="City"
-              value={shipping.city}
-              onChange={(e) => updateShipping('city', e.target.value)}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              placeholder="State"
-              value={shipping.state}
-              onChange={(e) => updateShipping('state', e.target.value)}
-              className={`${inputClass} w-20`}
-            />
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="ZIP"
-              value={shipping.zip}
-              onChange={(e) => updateShipping('zip', e.target.value)}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              placeholder="Country"
-              value={shipping.country}
-              onChange={(e) => updateShipping('country', e.target.value)}
-              className={`${inputClass} w-20`}
-            />
-          </div>
         </div>
 
         {/* Payment method toggle */}
@@ -284,10 +255,10 @@ export default function CheckoutForm({
               }
             >
               <CryptoPayment
-                shipping={shipping}
+                shipping={shipping || { name: '', address1: '', city: '', state: '', zip: '', country: 'US' }}
                 size={size}
                 designUrl={designUrl}
-                shippingValid={!!shippingValid}
+                shippingValid={shippingComplete}
                 status={status}
                 onStatusChange={setStatus}
                 onError={(err) => {
@@ -325,7 +296,7 @@ export default function CheckoutForm({
                 <button
                   type="button"
                   onClick={handleCardInit}
-                  disabled={status === 'paying' || !shippingValid}
+                  disabled={status === 'paying' || !shippingComplete}
                   className="w-full cursor-pointer rounded-full bg-[var(--accent)] px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {status === 'paying' ? 'Loading...' : 'Pay $35 Card'}
@@ -344,5 +315,18 @@ export default function CheckoutForm({
         </p>
       </div>
     </div>
+  )
+}
+
+export default function CheckoutForm(props: CheckoutFormProps) {
+  const stripePromise = useMemo(
+    () => loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''),
+    [],
+  )
+
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutFormInner {...props} />
+    </Elements>
   )
 }
