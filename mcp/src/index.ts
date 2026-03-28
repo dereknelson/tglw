@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
 import { discoverStore, discoverSchema } from './tools/discover.js'
+import { buy } from './tools/buy.js'
 import { loadConfig, saveConfig } from './config.js'
 
 const server = new McpServer({
@@ -60,6 +61,34 @@ server.tool(
 
     return {
       content: [{ type: 'text', text: `Payment configured. Using payment method: ${config.paymentMethod}. Default shipping to ${params.name}, ${params.city}, ${params.state}.` }],
+    }
+  },
+)
+
+server.tool(
+  'buy',
+  'Buy a product from an MPP-enabled store using Stripe SPT. Requires setup_payment to be run first.',
+  {
+    store_url: z.string().url().describe('Base URL of the store'),
+    product_id: z.string().optional().describe('Product ID from x402.json. Defaults to first product.'),
+    size: z.string().describe('Size (e.g. S, M, L, XL, 2XL)'),
+    shipping_name: z.string().optional().describe('Override default shipping name'),
+    shipping_address1: z.string().optional().describe('Override default street address'),
+    shipping_city: z.string().optional().describe('Override default city'),
+    shipping_state: z.string().optional().describe('Override default state'),
+    shipping_zip: z.string().optional().describe('Override default ZIP'),
+    shipping_country: z.string().optional().describe('Override default country'),
+  },
+  async (params) => {
+    const config = await loadConfig()
+    try {
+      const result = await buy(params, config)
+      return { content: [{ type: 'text', text: `Order placed!\n\n${result}` }] }
+    } catch (err) {
+      return {
+        content: [{ type: 'text', text: `Purchase failed: ${(err as Error).message}` }],
+        isError: true,
+      }
     }
   },
 )
