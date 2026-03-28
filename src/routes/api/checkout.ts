@@ -118,12 +118,12 @@ export const Route = createFileRoute('/api/checkout')({
             console.error('[checkout] Failed to create Stripe PaymentIntent:', err)
           }
 
-          const paymentRequired = btoa(
+          const paymentRequired = Buffer.from(
             JSON.stringify({
               x402Version: 2,
               accepts: [x402Requirements],
             }),
-          )
+          ).toString('base64')
 
           console.log('[checkout] 402 — returning payment options', {
             hasStripe: !!stripeClientSecret,
@@ -357,12 +357,12 @@ export const Route = createFileRoute('/api/checkout')({
           message: 'Your shirt is on the way.',
         }
 
-        const paymentResponse = btoa(
+        const paymentResponse = Buffer.from(
           JSON.stringify({
             success: settleResult.success,
             transaction: settleResult.transaction,
           }),
-        )
+        ).toString('base64')
 
         return new Response(JSON.stringify(responseBody), {
           status: 200,
