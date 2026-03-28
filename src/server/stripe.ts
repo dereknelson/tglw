@@ -9,7 +9,7 @@ export function getStripe(): Stripe {
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error('STRIPE_SECRET_KEY is not configured')
     }
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY.trim(), {
       apiVersion: '2026-03-04.preview' as Stripe.LatestApiVersion,
     })
   }
