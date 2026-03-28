@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import type { ShippingInfo } from './apliiq'
+import { PRICE } from './price'
 
 let _stripe: Stripe | null = null
 
@@ -15,8 +16,8 @@ export function getStripe(): Stripe {
   return _stripe
 }
 
-/** $35.00 in cents */
-const CHECKOUT_AMOUNT_CENTS = 3500
+/** Price in cents */
+const CHECKOUT_AMOUNT_CENTS = PRICE.cents
 
 export interface CheckoutPaymentInput {
   shipping: ShippingInfo

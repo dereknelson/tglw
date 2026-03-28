@@ -299,7 +299,7 @@ function CheckoutFormInner({
                   disabled={status === 'paying' || !shippingComplete}
                   className="w-full cursor-pointer rounded-full bg-[var(--accent)] px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {status === 'paying' ? 'Loading...' : 'Pay $35 Card'}
+                  {status === 'paying' ? 'Loading...' : 'Pay $25 Card'}
                 </button>
               )}
             </>
@@ -310,8 +310,8 @@ function CheckoutFormInner({
 
         <p className="mt-4 text-center text-xs text-[var(--ink-muted)]">
           {paymentMethod === 'crypto'
-            ? '$35 USDC on Base · Powered by x402'
-            : '$35.00 · Powered by Stripe'}
+            ? '$25 USDC on Base · Powered by x402'
+            : '$25.00 · Powered by Stripe'}
         </p>
       </div>
     </div>

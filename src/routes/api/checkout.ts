@@ -6,6 +6,7 @@ import {
   createCheckoutPaymentIntent,
 } from '../../server/stripe'
 import type { ShippingInfo } from '../../server/apliiq'
+import { PRICE } from '../../server/price'
 
 const PAY_TO = process.env.X402_PAY_TO!
 const FACILITATOR_URL = 'https://api.cdp.coinbase.com/platform/v2/x402'
@@ -14,8 +15,8 @@ const FACILITATOR_URL = 'https://api.cdp.coinbase.com/platform/v2/x402'
 const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
 const NETWORK_BASE = 'eip155:8453'
 
-// $35.00 in USDC base units (6 decimals)
-const PRICE_AMOUNT = '35000000'
+// Price in USDC base units (6 decimals)
+const PRICE_AMOUNT = PRICE.usdc6
 
 const VALID_SIZES = ['S', 'M', 'L', 'XL', '2XL']
 
@@ -26,7 +27,7 @@ const x402Requirements = {
   amount: PRICE_AMOUNT,
   payTo: PAY_TO,
   maxTimeoutSeconds: 300,
-  description: 'TGLW — Lift Weights Touch Grass Black Tee — $35 USDC on Base',
+  description: `TGLW — Lift Weights Touch Grass Black Tee — ${PRICE.display} USDC on Base`,
   extra: {},
 }
 
@@ -135,12 +136,12 @@ export const Route = createFileRoute('/api/checkout')({
               description: x402Requirements.description,
               methods: {
                 x402: {
-                  price: '$35.00 USDC',
+                  price: PRICE.displayUsdc,
                   network: 'Base',
                 },
                 stripe: stripeClientSecret
                   ? {
-                      price: '$35.00',
+                      price: PRICE.display,
                       clientSecret: stripeClientSecret,
                       paymentIntentId: stripePaymentId,
                       publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
@@ -203,7 +204,7 @@ export const Route = createFileRoute('/api/checkout')({
           console.log('[checkout:spt] processing SPT payment')
           try {
             const pi = await getStripe().paymentIntents.create({
-              amount: 3500,
+              amount: PRICE.cents,
               currency: 'usd',
               shared_payment_granted_token: sptTokenHeader,
               confirm: true,

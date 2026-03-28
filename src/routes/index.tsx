@@ -126,7 +126,7 @@ function Store() {
           </p>
         )}
 
-        <p className="mb-3 text-3xl font-bold text-[var(--ink)]">$35</p>
+        <p className="mb-3 text-3xl font-bold text-[var(--ink)]">$25</p>
 
         <button
           type="button"

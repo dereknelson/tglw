@@ -2,14 +2,14 @@
 
 ## Product
 Black tee with palm tree + sun graphic. "LIFT WEIGHTS TOUCH GRASS."
-100% cotton. $35 USD.
+100% cotton. $25 USD.
 
 ## Sizes
 S, M, L, XL, 2XL
 
 ## How to Buy
 POST /api/checkout
-Payment: $35 USDC on Base (x402 protocol)
+Payment: $25 USDC on Base (x402 protocol)
 
 Request body:
 {

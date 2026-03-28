@@ -88,7 +88,7 @@ export default function CryptoPayment({
       disabled={status === 'paying' || !shippingValid}
       className="w-full cursor-pointer rounded-full bg-[var(--accent)] px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {status === 'paying' ? 'Processing...' : 'Pay $35 USDC'}
+      {status === 'paying' ? 'Processing...' : 'Pay $25 USDC'}
     </button>
   )
 }
