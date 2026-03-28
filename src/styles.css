@@ -78,12 +78,11 @@ button {
 
 .tshirt-design {
   position: absolute;
-  top: 18%;
-  left: 20%;
-  width: 60%;
+  top: 20%;
+  left: 24%;
+  width: 52%;
   height: auto;
   pointer-events: none;
-  mix-blend-mode: screen;
 }
 
 @keyframes float {
