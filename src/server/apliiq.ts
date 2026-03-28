@@ -25,6 +25,7 @@ async function apliiqRequest(
   const bodyStr = body ? JSON.stringify(body) : ''
   const authHeader = buildAuthHeader(method, path, bodyStr)
 
+  console.log(`[apliiq] ${method} ${path}`)
   const res = await fetch(`${APLIIQ_BASE}${path}`, {
     method,
     headers: {
@@ -36,10 +37,13 @@ async function apliiqRequest(
 
   if (!res.ok) {
     const text = await res.text()
+    console.error(`[apliiq] ${method} ${path} failed:`, res.status, text)
     throw new Error(`Apliiq API error ${res.status}: ${text}`)
   }
 
-  return res.json()
+  const data = await res.json()
+  console.log(`[apliiq] ${method} ${path} OK`)
+  return data
 }
 
 export interface ShippingInfo {

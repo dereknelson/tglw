@@ -20,7 +20,11 @@ export const Route = createFileRoute('/api/customize')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const startTime = Date.now()
+        console.log('[customize] POST /api/customize started')
+
         if (!XAI_API_KEY) {
+          console.log('[customize] 503 — XAI_API_KEY not configured')
           return Response.json(
             { error: 'Image customization is not configured yet' },
             { status: 503 },
@@ -59,6 +63,11 @@ export const Route = createFileRoute('/api/customize')({
           )
         }
 
+        console.log('[customize] photo received:', {
+          type: photo.type,
+          size: `${(photo.size / 1024).toFixed(0)}KB`,
+        })
+
         // Convert uploaded photo to base64
         const photoBuffer = Buffer.from(await photo.arrayBuffer())
         const photoBase64 = photoBuffer.toString('base64')
@@ -67,7 +76,7 @@ export const Route = createFileRoute('/api/customize')({
         // Get base design as base64
         const designBase64 = await getBaseDesign(request.url)
 
-        // Call Grok image edit API
+        console.log('[customize] calling Grok API...')
         const grokRes = await fetch(GROK_API_URL, {
           method: 'POST',
           headers: {
@@ -122,6 +131,10 @@ export const Route = createFileRoute('/api/customize')({
           )
         }
 
+        console.log('[customize] SUCCESS', {
+          imageCount: imageUrls.length,
+          ms: Date.now() - startTime,
+        })
         return Response.json({ imageUrls })
       },
     },

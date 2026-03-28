@@ -34,10 +34,14 @@ export const Route = createFileRoute('/api/checkout')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const startTime = Date.now()
+        console.log('[checkout] POST /api/checkout started')
+
         let body: { shipping?: ShippingInfo; size?: string; designUrl?: string }
         try {
           body = await request.json()
         } catch {
+          console.log('[checkout] 400 — invalid JSON body')
           return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
         }
 
@@ -88,6 +92,15 @@ export const Route = createFileRoute('/api/checkout')({
         // Check for MPP / SPT agent card payment
         const sptTokenHeader = request.headers.get('X-Shared-Payment-Token')
 
+        console.log('[checkout] payment headers:', {
+          hasStripe: !!stripePaymentIntentId,
+          hasX402: !!paymentSignature,
+          hasSPT: !!sptTokenHeader,
+          size: body.size,
+          hasDesignUrl: !!body.designUrl,
+          shippingTo: `${body.shipping?.city}, ${body.shipping?.state}`,
+        })
+
         // No payment header — return 402 with all accepted methods
         if (!stripePaymentIntentId && !paymentSignature && !sptTokenHeader) {
           let stripeClientSecret: string | null = null
@@ -100,8 +113,9 @@ export const Route = createFileRoute('/api/checkout')({
             })
             stripeClientSecret = intent.clientSecret
             stripePaymentId = intent.paymentIntentId
+            console.log('[checkout] Stripe PaymentIntent created:', stripePaymentId)
           } catch (err) {
-            console.error('Failed to create Stripe PaymentIntent:', err)
+            console.error('[checkout] Failed to create Stripe PaymentIntent:', err)
           }
 
           const paymentRequired = btoa(
@@ -111,6 +125,10 @@ export const Route = createFileRoute('/api/checkout')({
             }),
           )
 
+          console.log('[checkout] 402 — returning payment options', {
+            hasStripe: !!stripeClientSecret,
+            ms: Date.now() - startTime,
+          })
           return new Response(
             JSON.stringify({
               error: 'Payment required',
@@ -142,20 +160,23 @@ export const Route = createFileRoute('/api/checkout')({
 
         // === Stripe card payment path ===
         if (stripePaymentIntentId) {
+          console.log('[checkout:stripe] verifying payment intent:', stripePaymentIntentId)
           const verification = await verifyPaymentIntent(stripePaymentIntentId)
 
           if (!verification.verified) {
+            console.log('[checkout:stripe] 402 — payment not confirmed')
             return Response.json(
               { error: 'Card payment not confirmed' },
               { status: 402 },
             )
           }
 
+          console.log('[checkout:stripe] payment verified, creating Apliiq order')
           let orderResult: { orderId: string; status: string }
           try {
             orderResult = await createOrder(shipping, size, body.designUrl)
           } catch (err) {
-            console.error('Apliiq order creation failed:', err)
+            console.error('[checkout:stripe] Apliiq order creation failed:', err)
             return Response.json(
               {
                 error:
@@ -165,6 +186,10 @@ export const Route = createFileRoute('/api/checkout')({
             )
           }
 
+          console.log('[checkout:stripe] SUCCESS', {
+            orderId: orderResult.orderId,
+            ms: Date.now() - startTime,
+          })
           return Response.json({
             order_id: orderResult.orderId,
             status: orderResult.status,
@@ -175,6 +200,7 @@ export const Route = createFileRoute('/api/checkout')({
 
         // === MPP / SPT agent card payment path ===
         if (sptTokenHeader) {
+          console.log('[checkout:spt] processing SPT payment')
           try {
             const pi = await getStripe().paymentIntents.create({
               amount: 3500,
@@ -194,17 +220,19 @@ export const Route = createFileRoute('/api/checkout')({
             } as any)
 
             if (pi.status !== 'succeeded') {
+              console.log('[checkout:spt] 402 — payment status:', pi.status)
               return Response.json(
                 { error: 'SPT payment not confirmed', status: pi.status },
                 { status: 402 },
               )
             }
 
+            console.log('[checkout:spt] payment confirmed, creating Apliiq order')
             let orderResult: { orderId: string; status: string }
             try {
               orderResult = await createOrder(shipping, size, body.designUrl)
             } catch (err) {
-              console.error('Apliiq order creation failed:', err)
+              console.error('[checkout:spt] Apliiq order creation failed:', err)
               return Response.json(
                 {
                   error:
@@ -214,6 +242,10 @@ export const Route = createFileRoute('/api/checkout')({
               )
             }
 
+            console.log('[checkout:spt] SUCCESS', {
+              orderId: orderResult.orderId,
+              ms: Date.now() - startTime,
+            })
             return Response.json({
               order_id: orderResult.orderId,
               status: orderResult.status,
@@ -221,7 +253,7 @@ export const Route = createFileRoute('/api/checkout')({
               message: 'Your shirt is on the way.',
             })
           } catch (err) {
-            console.error('SPT payment failed:', err)
+            console.error('[checkout:spt] SPT payment failed:', err)
             return Response.json(
               { error: 'SPT payment failed' },
               { status: 402 },
@@ -230,6 +262,7 @@ export const Route = createFileRoute('/api/checkout')({
         }
 
         // === x402 crypto payment path ===
+        console.log('[checkout:x402] processing x402 payment')
         let paymentPayload: Record<string, unknown>
         try {
           paymentPayload = JSON.parse(atob(paymentSignature!))
@@ -255,6 +288,11 @@ export const Route = createFileRoute('/api/checkout')({
           invalidReason?: string
         }
 
+        console.log('[checkout:x402] verify result:', {
+          isValid: verifyResult.isValid,
+          reason: verifyResult.invalidReason,
+        })
+
         if (!verifyResult.isValid) {
           return Response.json(
             {
@@ -265,11 +303,12 @@ export const Route = createFileRoute('/api/checkout')({
           )
         }
 
+        console.log('[checkout:x402] payment verified, creating Apliiq order')
         let orderResult: { orderId: string; status: string }
         try {
           orderResult = await createOrder(shipping, size, body.designUrl)
         } catch (err) {
-          console.error('Apliiq order creation failed:', err)
+          console.error('[checkout:x402] Apliiq order creation failed:', err)
           return Response.json(
             {
               error:
@@ -295,9 +334,20 @@ export const Route = createFileRoute('/api/checkout')({
           errorReason?: string
         }
 
+        console.log('[checkout:x402] settle result:', {
+          success: settleResult.success,
+          tx: settleResult.transaction,
+        })
+
         if (!settleResult.success) {
-          console.error('Payment settlement failed:', settleResult.errorReason)
+          console.error('[checkout:x402] settlement failed:', settleResult.errorReason)
         }
+
+        console.log('[checkout:x402] SUCCESS', {
+          orderId: orderResult.orderId,
+          tx: settleResult.transaction,
+          ms: Date.now() - startTime,
+        })
 
         const responseBody = {
           order_id: orderResult.orderId,
