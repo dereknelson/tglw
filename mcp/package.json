@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "bin": {
-    "tglw-buy": "./dist/index.js"
+    "tglw-buy": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
+    "cli": "tsx src/cli.ts",
     "dev": "tsx src/index.ts",
     "test": "vitest run"
   },
