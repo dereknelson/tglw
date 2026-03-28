@@ -48,7 +48,7 @@ function Store() {
   return (
     <main className="flex min-h-svh flex-col items-center px-6 pt-14 pb-16">
       {/* Hero section */}
-      <div className="rise-in flex w-full max-w-lg flex-col items-center text-center">
+      <div className="flex w-full max-w-lg flex-col items-center text-center">
         {/* Tagline + Title */}
         <h1 className="mb-3 text-3xl font-bold tracking-tight text-[var(--ink)] sm:text-4xl">
           Text Claude.
